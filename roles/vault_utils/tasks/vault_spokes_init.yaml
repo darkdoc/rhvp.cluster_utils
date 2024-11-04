@@ -118,7 +118,7 @@
   kubernetes.core.k8s_exec:
     namespace: "{{ vault_ns }}"
     pod: "{{ vault_pod }}"
-    command: bash -e -c "echo '{{ item.value['caBundle'] }}' > /tmp/{{ item.value['vault_path'] }}.ca"
+    command: sh -e -c "echo '{{ item.value['caBundle'] }}' > /tmp/{{ item.value['vault_path'] }}.ca"
   loop: "{{ clusters_info | dict2items }}"
   when:
     - item.value['esoToken'] is defined
@@ -131,7 +131,7 @@
   kubernetes.core.k8s_exec:
     namespace: "{{ vault_ns }}"
     pod: "{{ vault_pod }}"
-    command: bash -e -c "if vault auth list | grep -e ^'{{ item.value['vault_path'] }}'; then
+    command: sh -e -c "if vault auth list | grep -e ^'{{ item.value['vault_path'] }}'; then
         echo done; else
         vault auth enable -path='{{ item.value['vault_path'] }}' kubernetes; fi"
   loop: "{{ clusters_info | dict2items }}"
@@ -146,7 +146,7 @@
   kubernetes.core.k8s_exec:
     namespace: "{{ vault_ns }}"
     pod: "{{ vault_pod }}"
-    command: bash -e -c "vault write auth/{{ item.value['vault_path'] }}/config
+    command: sh -e -c "vault write auth/{{ item.value['vault_path'] }}/config
         token_reviewer_jwt=\"{{ item.value['esoToken'] }}\"
         kubernetes_host=\"{{ item.value['server_api'] }}\"
         kubernetes_ca_cert=@/tmp/{{ item.value['vault_path'] }}.ca"
@@ -162,7 +162,7 @@
     namespace: "{{ vault_ns }}"
     pod: "{{ vault_pod }}"
     command: >
-      bash -e -c "echo \"path \\\"secret/data/{{ item.value['vault_path'] }}/*\\\" {
+      sh -e -c "echo \"path \\\"secret/data/{{ item.value['vault_path'] }}/*\\\" {
         capabilities = {{ vault_spoke_capabilities }} }\" > /tmp/policy-{{ item.value['vault_path'] }}.hcl"
   loop: "{{ clusters_info | dict2items }}"
   when:
@@ -176,7 +176,7 @@
     namespace: "{{ vault_ns }}"
     pod: "{{ vault_pod }}"
     command: >
-      bash -e -c "echo \"path \\\"secret/data/{{ vault_pushsecrets_policy }}/*\\\" {
+      sh -e -c "echo \"path \\\"secret/data/{{ vault_pushsecrets_policy }}/*\\\" {
         capabilities = {{ vault_pushsecrets_capabilities }} }\" >> /tmp/policy-{{ item.value['vault_path'] }}.hcl"
   loop: "{{ clusters_info | dict2items }}"
   when:
@@ -190,7 +190,7 @@
     namespace: "{{ vault_ns }}"
     pod: "{{ vault_pod }}"
     command: >
-      bash -e -c "echo \"path \\\"secret/metadata/{{ vault_pushsecrets_policy }}/*\\\" {
+      sh -e -c "echo \"path \\\"secret/metadata/{{ vault_pushsecrets_policy }}/*\\\" {
         capabilities = {{ vault_pushsecrets_capabilities }} }\" >> /tmp/policy-{{ item.value['vault_path'] }}.hcl"
   loop: "{{ clusters_info | dict2items }}"
   when:
